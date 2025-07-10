@@ -1,0 +1,24 @@
+{{ define "sign-up" }}
+
+{{ template "header" }}
+
+    <div>
+        <form action="" method="post">
+            <label for="user-name">User:</label>
+            <input type="text" name="user-name" id="user-name">
+
+            <label for="user-pass">Password:</label>
+            <input type="password" name="user-pass" id="user-pass">
+
+            <label for="user-pass-con">Confirm Password:</label>
+            <input type="password" name="user-pass-con" id="user-pass-con">
+
+            <button type="submit">Sign up</button>
+        </form>
+        
+        <a href="/">Go back</a>
+    </div>
+
+{{ template "footer" }}
+
+{{ end }}
