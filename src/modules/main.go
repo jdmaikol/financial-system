@@ -1,14 +1,23 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"text/template"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var templates = template.Must(template.ParseGlob("C:/Users/Maikol Moreno/Desktop/financial_system/src/routes/*"))
 var users = make(map[int]string)
 var passwords = make(map[int]string)
+
+type User struct {
+	Id       int
+	Username string
+	Password string
+}
 
 func main() {
 
@@ -23,6 +32,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func connDB() (conn *sql.DB) {
+	Driver := "mysql"
+	User := "root"
+	Password := ""
+	NameDB := "financial_system"
+
+	conn, err := sql.Open(Driver, User+":"+Password+"@tcp(127.0.0.1)/"+NameDB)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return conn
 }
 
 func indexHTML(w http.ResponseWriter, r *http.Request) {
@@ -61,11 +84,29 @@ func authUser(username string, password string) bool {
 
 	userNoAuth := false
 
-	for i := 0; i <= len(users); i++ {
-		if username == users[i] && password == passwords[i] {
+	conn := connDB()
+	query := "SELECT nam_use, pass_use FROM users WHERE nam_use = ? AND pass_use = ?"
+	user := User{}
+
+	var qUsername, qPassword string
+
+	err := conn.QueryRow(query, username, password).Scan(&qUsername, &qPassword)
+
+	if err == sql.ErrNoRows {
+		fmt.Println("Datos erroneos, intenta de nuevo...")
+	} else if err != nil {
+		panic(err.Error())
+	} else {
+
+		user.Username = qUsername
+		user.Password = qPassword
+
+		if username == user.Username && password == user.Password {
 			userNoAuth = true
 		}
 	}
+
+	conn.Close()
 
 	return userNoAuth
 }
